@@ -2,8 +2,9 @@ import express from "express";
 import dotenv from "dotenv/config";
 import mongoose from "mongoose";
 import cors from "cors";
-import products from "./data/Products.js";
+import productRoute from "./routes/productRoute.js";
 import { connectDb } from "./config/dbConnection.js";
+import { notFound, errorHandler } from "./middleware/errorMiddleware.js";
 
 //Database connection
 connectDb();
@@ -19,13 +20,11 @@ app.listen(port, () => {
   console.log(`server is running on port ${port}`);
 });
 
-app.get("/api/products", (req, res) => {
-  console.log("request from front");
-  res.json(products);
-});
+app.use('/api/products' ,productRoute)
 
-app.get("/api/products/:id", (req, res) => {
-  const product = products.find((p) => p._id === req.params.id);
-  console.log("request for single product");
-  res.json(product);
-});
+app.use(notFound)
+app.use(errorHandler)
+
+
+
+

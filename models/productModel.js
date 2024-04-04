@@ -1,7 +1,7 @@
 import mongoose, { trusted } from "mongoose";
 
 //Review Schema
-const reviwSchema = mongoose.Schema({
+const reviewSchema = mongoose.Schema({
   user:{
     type:mongoose.Schema.ObjectId,
     required:true
