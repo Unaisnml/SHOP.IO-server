@@ -34,7 +34,7 @@ const orderSchema = new mongoose.Schema(
       id: { type: String, required: true },
       status: { type: String, required: true },
       updated_time: { type: String, required: true },
-      email: { type: String, required: true },
+      email: { type: String, required: true},
     },
     itemsPrice: {
       type: Number,
