@@ -27,4 +27,6 @@ router
   .delete(protect, admin, deleteUser)
   .put(protect, admin, updateUser);
 
+  
+
 export default router;

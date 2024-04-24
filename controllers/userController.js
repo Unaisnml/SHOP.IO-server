@@ -1,6 +1,8 @@
 import { asyncHandler } from "../middleware/asyncHandler.js";
 import { User } from "../models/userModel.js";
-import jwt from "jsonwebtoken";
+import { validateEmail } from "../utils/validation.js";
+import { validateLength } from "../utils/validation.js";
+import { generateToken } from "../utils/generateToken.js";
 
 //@desc Auth User & Get token
 //@route POST/api/users/login
@@ -14,18 +16,10 @@ const authUser = asyncHandler(async (req, res) => {
     throw Error("Invalid Email address");
   }
   const check = await user.checkPassword(password);
-  console.log(process.env.JWT_SECRET);
+
   if (check) {
-    const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, {
-      expiresIn: "30d",
-    });
-    // Set jwt as HTTP only cookie
-    res.cookie("jwt", token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV !== 'development',
-      sameSite: "strict", // Prevent CSRF attacks
-      maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
-    });
+    generateToken(res, user._id);
+
     res.status(200).json({
       _id: user._id,
       name: user.name,
@@ -42,28 +36,102 @@ const authUser = asyncHandler(async (req, res) => {
 //@route POST/api/users
 //@access public
 const registerUser = asyncHandler(async (req, res) => {
-  res.send("register user");
+  const { name, email, password } = req.body;
+
+  if (!validateEmail(email)) {
+    res.status(400);
+    throw new Error("Invalid email address");
+  }
+  const emailExist = await User.findOne({ email });
+  if (emailExist) {
+    res.status(400);
+    throw new Error("Account already Exist, Please login");
+  }
+
+  if (!validateLength(password, 6, 20)) {
+    res.status(400);
+    throw new Error("Password must atleast 6 Characters");
+  }
+
+  const user = await User.create({
+    name,
+    email,
+    password,
+  });
+
+  if (user) {
+    generateToken(res, user._id);
+    res.status(200).json({
+      _id: user._id,
+      name: user.name,
+      email: user.email,
+      isAdmin: user.isAdmin,
+    });
+  } else {
+    res.status(400);
+    throw new Error("Invalid user data");
+  }
 });
 
 //@desc Logut user / clear cookie
 //@route POST/api/users/logout
 //@access private
 const logoutUser = asyncHandler(async (req, res) => {
-  res.send("logout user");
+  res.cookie("jwt", "", {
+    httpOnly: true,
+    expires: new Date(0),
+  });
+  res.status(200).json({
+    message: "Loged out successfully",
+  });
 });
 
 //@desc Get user Profile
 //@route GET/api/users/profile
 //@access private
 const getUserProfile = asyncHandler(async (req, res) => {
-  res.send("User profile");
+  const user = await User.findById(req.user._id);
+
+  if (user) {
+    console.log(user.name);
+    res.status(200).json({
+      _id: user._id,
+      name: user.name,
+      email: user.email,
+      isAdmin: user.isAdmin,
+    });
+  } else {
+    res.status(404);
+    throw new Error("User not Found");
+  }
 });
 
 //@desc Update user Profile
 //@route PUT/api/users/profile
 //@access private
 const updateUserProfile = asyncHandler(async (req, res) => {
-  res.send("update profile");
+  const user = await User.findById(req.user._id);
+  if (user) {
+    user.name = req.body.name || user.name;
+    user.email = req.body.email || user.name;
+
+    if (req.body.password) {
+      user.password = req.body.password;
+    }
+
+    const updatedUser = await user.save();
+    console.log(updatedUser);
+
+    res.status(200).json({
+      _id: updateUser._id,
+      name: updateUser.name,
+      email: updateUser.email,
+      isAdmin: updatedUser.isAdmin,
+    });
+  } else {
+    res.status(404);
+    throw new Error("User not found");
+  }
 });
 
 //@desc Get users
