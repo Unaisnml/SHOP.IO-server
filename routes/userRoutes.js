@@ -14,9 +14,9 @@ import {
 import { protect, admin } from "../middleware/authMiddleware.js";
 // console.log(protect, admin);
 
-router.route("/").post(registerUser).get(protect, admin, getUsers);
+router.route("/register").post(registerUser).get(protect, admin, getUsers);
 router.post("/logout", logoutUser);
-router.post("/login", authUser);
+router.post("/auth", authUser);
 router
   .route("/profile")
   .get(protect, getUserProfile)
