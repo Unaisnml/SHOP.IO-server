@@ -19,8 +19,8 @@ const authUser = asyncHandler(async (req, res) => {
 
   if (check) {
     generateToken(res, user._id);
-
-    res.status(200).json({
+    
+    res.json({
       _id: user._id,
       name: user.name,
       email: user.email,
@@ -61,6 +61,7 @@ const registerUser = asyncHandler(async (req, res) => {
 
   if (user) {
     generateToken(res, user._id);
+    
     res.status(200).json({
       _id: user._id,
       name: user.name,
@@ -73,17 +74,12 @@ const registerUser = asyncHandler(async (req, res) => {
   }
 });
 
-//@desc Logut user / clear cookie
+//@desc Logout user / clear cookie
 //@route POST/api/users/logout
 //@access private
 const logoutUser = asyncHandler(async (req, res) => {
-  res.cookie("jwt", "", {
-    httpOnly: true,
-    expires: new Date(0),
-  });
-  res.status(200).json({
-    message: "Loged out successfully",
-  });
+  res.clearCookie("jwt");
+  res.status(200).json({ message: "Logged out successfully" });
 });
 
 //@desc Get user Profile

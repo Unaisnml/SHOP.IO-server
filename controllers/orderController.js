@@ -1,5 +1,7 @@
 import { asyncHandler } from "../middleware/asyncHandler.js";
 import { Order } from "../models/orderModel.js";
+import { Product } from "../models/productModel.js";
+import { calcPrices } from "../utils/calculatePrice.js";
 
 // @desc   Create new Order
 // @route  POST api/orders
@@ -11,34 +13,72 @@ const addOrderItems = asyncHandler(async (req, res) => {
     shippingAddress,
     paymentMethod,
     itemsPrice,
-    shippingPrice,
     taxPrice,
+    shippingPrice,
     totalPrice,
   } = req.body;
-
+  console.log("orderItems............", req.body);
   if (orderItems && orderItems.length === 0) {
     res.status(400);
     throw new Error("No order items found");
   } else {
-    const order = new Order({
-      //To get items inside the orderItems Array
-      orderItems: orderItems.map((x) => ({
-        ...x,
-        product: x._id,
+    // console.log(
+    //   "neeeed to create order here....................................."
+    // );
+
+    // get the ordered items from our database
+    const itemsFromDB = await Product.find({
+      _id: { $in: orderItems.map((x) => x._id) },
+    });
+
+    // map over the order items and use the price from our items from database
+    const dbOrderItems = orderItems.map((itemFromClient) => {
+      const matchingItemFromDB = itemsFromDB.find(
+        (itemFromDB) => itemFromDB._id.toString() === itemFromClient._id
+      );
+      return {
+        ...itemFromClient,
+        product: itemFromClient._id,
+        price: matchingItemFromDB.price,
         _id: undefined,
-      })),
-      // ----------------//
-      user: user._id,
+      };
+    });
+
+    // console.log(".......dbOrderItems........", dbOrderItems);
+
+    // calculate prices
+    const { itemsPrice, taxPrice, shippingPrice, totalPrice } =
+      calcPrices(dbOrderItems);
+    // console.log(
+    //   "itemsPrice:",
+    //   itemsPrice,
+    //   " taxPrice:",
+    //   taxPrice,
+    //   " shippingPrice:",
+    //   shippingPrice,
+    //   " totalPrice:",
+    //   totalPrice
+    // );
+
+    const order = new Order({
+      orderItems: dbOrderItems,
+      user: req.user._id,
       shippingAddress,
       paymentMethod,
       itemsPrice,
-      shippingPrice,
       taxPrice,
+      shippingPrice,
       totalPrice,
     });
-
-    const createdOrder = await order.save();
-    res.status(201).json(createdOrder);
+    console.log(shippingAddress);
+    try {
+      const createdOrder = await order.save();
+      console.log("createdOrder:", createdOrder);
+      res.status(201).json(createdOrder);
+    } catch (error) {
+      console.error("Error saving order:", error);
+      res.status(500).json({ error: "Failed to save order" });
+    }
   }
 });
 
@@ -67,7 +107,7 @@ const getOrderById = asyncHandler(async (req, res) => {
 });
 
 // @desc   Update order to paid
-// @route  GET api/orders/:id/pay
+// @route  PUT api/orders/:id/pay
 // @access Private
 
 const updateOrderToPaid = asyncHandler(async (req, res) => {
@@ -75,7 +115,7 @@ const updateOrderToPaid = asyncHandler(async (req, res) => {
 });
 
 // @desc   Update order to delivered
-// @route  GET api/orders/:id/deliver
+// @route  PUT api/orders/:id/deliver
 // @access Private/Admin
 
 const updateOrderToDelivered = asyncHandler(async (req, res) => {
