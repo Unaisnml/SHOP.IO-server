@@ -30,13 +30,26 @@ const orderSchema = new mongoose.Schema(
     paymentMethod: {
       type: String,
       required: true,
+      enum: ["Razorpay", "COD"],
+      default: "Razorpay",
     },
-    // paymentResult: {
-    //   id: { type: String, required: true },
-    //   status: { type: String, required: true },
-    //   updated_time: { type: String, required: true },
-    //   email: { type: String, required: true },
+    // codInfo: {
+    //   isPaid: {
+    //     type: Boolean,
+    //     required: true,
+    //     default: false,
+    //   },
+    //   paidAt: {
+    //     type: Date,
+    //   },
     // },
+
+    paymentResult: {
+      id: { type: String, required: true },
+      status: { type: String, required: true },
+      updated_time: { type: String, required: true },
+      email: { type: String, required: true },
+    },
     itemsPrice: {
       type: Number,
       required: true,
