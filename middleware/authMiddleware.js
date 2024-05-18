@@ -3,16 +3,18 @@ import { asyncHandler } from "./asyncHandler.js";
 import { User } from "../models/userModel.js";
 
 //protect routes
-const protect = asyncHandler(async (req, res, next) => {
+const protect = async (req, res, next) => {
   let token;
 
   //Read the jwt from cookie
   token = req.cookies.jwt;
+ 
   
   
   
   
   if (token) {
+    console.log("HElllllllllllllllo protected");
     try {
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
      
@@ -27,7 +29,7 @@ const protect = asyncHandler(async (req, res, next) => {
     res.status(401);
     throw new Error("Not Authorized, no token");
   }
-});
+};
 
 //admin middleware
 const admin = (req, res, next) => {

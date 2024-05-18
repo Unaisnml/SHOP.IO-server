@@ -1,3 +1,4 @@
+import path from "path";
 import express from "express";
 import dotenv from "dotenv/config";
 import cors from "cors";
@@ -6,6 +7,7 @@ import helmet from "helmet";
 import productRoutes from "./routes/productRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
 import orderRoutes from "./routes/orderRoutes.js";
+import uploadRoutes from "./routes/uploadRoutes.js";
 import { connectDb } from "./config/dbConnection.js";
 import { notFound, errorHandler } from "./middleware/errorMiddleware.js";
 
@@ -31,10 +33,6 @@ app.use(
 app.use(helmet());
 app.use(helmet.crossOriginResourcePolicy({ policy: "cross-origin" }));
 
-// app.use((req, res, next) => {
-//   console.log("Request cookies:", req.cookies);
-//   next();
-// });
 
 //Port
 const port = process.env.PORT || 5000;
@@ -45,12 +43,16 @@ app.listen(port, () => {
 //routes
 app.use("/api/products", productRoutes);
 app.use("/api/users", userRoutes);
-app.use("/api/order", orderRoutes);
+app.use("/api/orders", orderRoutes);
+app.use("/api/upload", uploadRoutes);
 
-//paypal route
-// app.get("/api/config/paypal", (req, res) => {
-//   res.send({ clientId: process.env.PAYPAL_CLIENT_ID });
-// });
+// razorpay route
+app.get("/api/config/razorpay", (req, res) => {
+  res.send({ key: process.env.RAZORPAY_KEY_ID });
+});
+
+// const __dirname = path.resolve();
+// app.use("/uploads", express.static(path.join(__dirname, "/uploads")));
 
 app.use(notFound);
 app.use(errorHandler);

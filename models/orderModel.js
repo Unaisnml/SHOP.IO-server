@@ -11,7 +11,7 @@ const orderSchema = new mongoose.Schema(
       {
         name: { type: String, required: true },
         count: { type: Number, required: true },
-        image: { type: String, required: true },
+        image: { type: Array, required: true },
         price: { type: Number, required: true },
         product: {
           type: mongoose.Schema.ObjectId,
@@ -30,25 +30,13 @@ const orderSchema = new mongoose.Schema(
     paymentMethod: {
       type: String,
       required: true,
-      enum: ["Razorpay", "COD"],
+      // enum: ["Razorpay", "COD"],
       default: "Razorpay",
     },
-    // codInfo: {
-    //   isPaid: {
-    //     type: Boolean,
-    //     required: true,
-    //     default: false,
-    //   },
-    //   paidAt: {
-    //     type: Date,
-    //   },
-    // },
 
-    paymentResult: {
-      id: { type: String, required: true },
-      status: { type: String, required: true },
-      updated_time: { type: String, required: true },
-      email: { type: String, required: true },
+    paymentInfo: {
+      razorpayPaymentId: { type: String, required: true },
+      razorpayOrderId: { type: String, required: true },
     },
     itemsPrice: {
       type: Number,
@@ -76,6 +64,23 @@ const orderSchema = new mongoose.Schema(
       default: false,
     },
     paidAt: {
+      type: Date,
+      default: Date.now(),
+    },
+    isPacked: {
+      type: Boolean,
+      required: true,
+      default: false,
+    },
+    packedAt: {
+      type: Date,
+    },
+    isShipped: {
+      type: Boolean,
+      required: true,
+      default: false,
+    },
+    shippedAt: {
       type: Date,
     },
     isDelivered: {
