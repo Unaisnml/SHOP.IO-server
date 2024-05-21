@@ -9,6 +9,7 @@ import {
   updateOrderToShipped,
   updateOrderToDelivered,
   getOrders,
+  getTotalSales,
 } from "../controllers/orderController.js";
 import {
   checkOut,
@@ -17,10 +18,10 @@ import {
 import { protect, admin } from "../middleware/authMiddleware.js";
 
 router.route("/").post(protect, createOrder).get(protect, admin, getOrders);
-router.post("/checkout", checkOut)
+router.post("/checkout", checkOut);
 router.route("/verifyPayment").post(protect, paymentVerification);
-router.get("/myorders",protect,getMyOrders)
-router.get("/:id",protect, getOrderById)
+router.get("/myorders", protect, getMyOrders);
+router.get("/:id", protect, getOrderById);
 router.route("/:id/pack").put(protect, admin, updateOrderToPacked);
 router.route("/:id/ship").put(protect, admin, updateOrderToShipped);
 router.route("/:id/deliver").put(protect, admin, updateOrderToDelivered);

@@ -17,8 +17,8 @@ connectDb();
 const app = express();
 
 //Body parser middlware
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.json({ limit: "50mb" }));
+app.use(express.urlencoded({ extended: true, limit: "50mb" }));
 //Cookie parser middlware
 app.use(cookieParser());
 app.use(
@@ -32,7 +32,6 @@ app.use(
 
 app.use(helmet());
 app.use(helmet.crossOriginResourcePolicy({ policy: "cross-origin" }));
-
 
 //Port
 const port = process.env.PORT || 5000;
@@ -50,9 +49,6 @@ app.use("/api/upload", uploadRoutes);
 app.get("/api/config/razorpay", (req, res) => {
   res.send({ key: process.env.RAZORPAY_KEY_ID });
 });
-
-// const __dirname = path.resolve();
-// app.use("/uploads", express.static(path.join(__dirname, "/uploads")));
 
 app.use(notFound);
 app.use(errorHandler);

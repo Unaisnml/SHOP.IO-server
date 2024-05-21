@@ -40,7 +40,7 @@ function generateUniqueFileName() {
   }
 
 
-  router.post("/", upload.array("images", 2), async (req, res) => {
+  router.post("/", upload.array("images", 3), async (req, res) => {
     try {
       const uploadedImages = [];
   
@@ -61,7 +61,7 @@ function generateUniqueFileName() {
         // Delete the temporary file
         fs.unlinkSync(tempFilePath);
       }
-  
+  // console.log("Uploaded images: ",uploadedImages);
       res.send({
         message: "Images uploaded",
         images: uploadedImages,
