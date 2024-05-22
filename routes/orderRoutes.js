@@ -9,7 +9,7 @@ import {
   updateOrderToShipped,
   updateOrderToDelivered,
   getOrders,
-  getTotalSales,
+  
 } from "../controllers/orderController.js";
 import {
   checkOut,

@@ -21,6 +21,19 @@ const userSchema = new mongoose.Schema(
       required: true,
       default: false,
     },
+    isVerified: {
+      type: Boolean,
+      required: true,
+      default: false,
+    },
+    otp: {
+      type: String,
+      required: false,
+    },
+    otpExpires: {
+      type: Date,
+      required: false,
+    },
   },
   { timestamps: true }
 );
@@ -37,7 +50,6 @@ userSchema.pre("save", async function (next) {
 
 //Compare password with user enterd password
 userSchema.methods.checkPassword = async function (enteredPassword) {
-  
   return await bcrypt.compare(enteredPassword, this.password);
 };
 

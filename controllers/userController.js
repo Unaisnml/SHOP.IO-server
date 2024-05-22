@@ -3,6 +3,7 @@ import { User } from "../models/userModel.js";
 import { validateEmail } from "../utils/validation.js";
 import { validateLength } from "../utils/validation.js";
 import { generateToken } from "../utils/generateToken.js";
+import { sendOtp } from "../utils/generateOtp.js";
 
 //@desc Auth User & Get token
 //@route POST/api/users/login
@@ -43,36 +44,85 @@ const registerUser = asyncHandler(async (req, res) => {
     res.status(400);
     throw new Error("Invalid email address");
   }
+
   const emailExist = await User.findOne({ email });
   if (emailExist) {
     res.status(400);
-    throw new Error("Account already Exist, Please login");
+    throw new Error("Account already exists, please login");
   }
 
   if (!validateLength(password, 6, 20)) {
     res.status(400);
-    throw new Error("Password must atleast 6 Characters");
+    throw new Error("Password must be at least 6 characters");
   }
 
-  const user = await User.create({
-    name,
-    email,
-    password,
-  });
+  try {
+    const otpResponse = await sendOtp(email);
+    const otp = otpResponse.otp;
+    const otpExpires = Date.now() + 5 * 60 * 1000;
 
-  if (user) {
-    generateToken(res, user._id);
-
-    res.status(200).json({
-      _id: user._id,
-      name: user.name,
-      email: user.email,
-      isAdmin: user.isAdmin,
+    const user = await User.create({
+      name,
+      email,
+      password,
+      otp,
+      otpExpires,
     });
-  } else {
-    res.status(400);
-    throw new Error("Invalid user data");
+
+    if (user) {
+      res.status(201).json({
+        _id: user._id,
+        name: user.name,
+        email: user.email,
+        isAdmin: user.isAdmin,
+      });
+    } else {
+      res.status(400);
+      throw new Error("Invalid user data");
+    }
+  } catch (error) {
+    console.error("Failed to send OTP:", error);
+    res.status(500).json({ message: "Failed to send OTP", error: error.message });
   }
+});
+
+//@desc Verify Otp user
+//@route POST/api/verifyOtp
+//@access public
+
+const verifyOtp = asyncHandler(async (req, res) => {
+  const { email, otp } = req.body;
+  console.log('otp',req.body);
+
+  const user = await User.findOne({ email });
+
+  if (!user) {
+    res.status(400);
+    throw new Error("User not found");
+  }
+
+  if (user.otp !== otp) {
+    res.status(400);
+    throw new Error("Invalid OTP");
+  }
+
+  if (user.otpExpires < Date.now()) {
+    res.status(400);
+    throw new Error("OTP has expired");
+  }
+
+  user.isVerified = true;
+  user.otp = undefined;
+  user.otpExpires = undefined;
+  await user.save();
+
+  generateToken(res, user._id);
+  res.status(200).json({
+    _id: user._id,
+    name: user.name,
+    email: user.email,
+    isAdmin: user.isAdmin,
+  });
 });
 
 //@desc Logout user / clear cookie
@@ -147,9 +197,8 @@ const getUsers = asyncHandler(async (req, res) => {
 //@route GET/api/users/:id
 //@access private/Admin
 const getUserById = asyncHandler(async (req, res) => {
-  
   const user = await User.findById(req.params.id).select("-password");
-  console.log("Hellllllllllllllllllo",user);
+  console.log("Hellllllllllllllllllo", user);
   if (user) {
     res.status(200).json(user);
   } else {
@@ -185,7 +234,7 @@ const deleteUser = asyncHandler(async (req, res) => {
 //@access private/Admin
 const updateUser = asyncHandler(async (req, res) => {
   const user = await User.findById(req.params.id);
-console.log(user);
+  console.log(user);
   if (user) {
     user.name = req.body.name || user.name;
     user.email = req.body.email || user.email;
@@ -207,6 +256,7 @@ console.log(user);
 export {
   authUser,
   registerUser,
+  verifyOtp,
   logoutUser,
   getUserProfile,
   updateUserProfile,

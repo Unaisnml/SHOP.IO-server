@@ -162,9 +162,6 @@ const getOrders = asyncHandler(async (req, res) => {
   }
 });
 
-const getTotalSales = asyncHandler(async(req,res)=>{
-  res.send('Helllllllllllllllllllllllllo')
-})
 
 export {
   createOrder,
@@ -174,5 +171,4 @@ export {
   updateOrderToShipped,
   updateOrderToDelivered,
   getOrders,
-  getTotalSales
 };
