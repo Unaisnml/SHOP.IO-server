@@ -139,7 +139,6 @@ const getTopProducts = asyncHandler(async (req, res) => {
 //@route GET api/products/search
 //@access Public
 const searchProducts = asyncHandler(async (req, res) => {
-  console.log("Hellllllllllo search here");
   const { query } = req.query;
   console.log("query", req.query);
   if (!query) {
@@ -222,40 +221,6 @@ const getFilteredProducts = asyncHandler(async (req, res) => {
   const brands = await Product.distinct("brand");
 
   res.json({ products, page, pages, categories, brands, count });
-  // ----------------------------------------------------------------------------------------
-  // const pageNumber = Number(page) || 1;
-
-  // const query = {};
-
-  // if (keyword) {
-  //   query.name = { $regesx: keyword, $options: "i" };
-  // }
-
-  // if (category) {
-  //   query.category = category;
-  // }
-
-  // if (brand) {
-  //   query.brand = brand;
-  // }
-
-  // if (rating) {
-  //   query.rating = { $gte: Number(rating) };
-  // }
-
-  // const count = await Product.countDocuments(query);
-
-  // const products = await Product.find(query)
-  //   .limit(pageSize)
-  //   .skip(pageSize * pageNumber - 1);
-
-  // res.json({
-  //   products,
-  //   page: pageNumber,
-  //   pages: Math.ceil(count / pageSize),
-  //   categories: await Product.distinct("category"),
-  //   brands: await Product.distinct("brand"),
-  // });
 });
 
 export {
